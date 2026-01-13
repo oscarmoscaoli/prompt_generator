@@ -3,23 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Art Studio Pro - Ultimate Edition</title>
+    <title>ComfyUI Command Center - Male Art</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root {
-            --bg: #030303; --card: #0a0a0a; --text: #e5e7eb; --border: #1a1a1a; --header: rgba(3, 3, 3, 0.9);
-        }
-        .light-theme {
-            --bg: #f3f4f6; --card: #ffffff; --text: #1f2937; --border: #e5e7eb; --header: rgba(243, 244, 246, 0.9);
-        }
+        :root { --bg: #030303; --card: #0a0a0a; --text: #e5e7eb; --border: #1a1a1a; --header: rgba(3, 3, 3, 0.9); }
+        .light-theme { --bg: #f3f4f6; --card: #ffffff; --text: #1f2937; --border: #e5e7eb; --header: rgba(243, 244, 246, 0.9); }
         body { background-color: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; transition: all 0.3s ease; }
         .btn-opt { background: var(--bg); border: 1px solid var(--border); transition: all 0.2s; cursor: pointer; font-size: 0.7rem; position: relative; color: var(--text); }
         .btn-opt.active { background: #4f46e5; border-color: #818cf8; color: white; box-shadow: 0 0 15px rgba(79, 70, 229, 0.3); }
         .btn-opt.weighted::after { content: '1.3'; position: absolute; top: -5px; right: -5px; background: #fbbf24; color: black; font-size: 0.5rem; padding: 1px 3px; border-radius: 4px; font-weight: bold; }
         .section-card { background: var(--card); border-radius: 12px; padding: 1rem; border: 1px solid var(--border); }
         .sticky-header { position: sticky; top: 0; z-index: 100; background: var(--header); backdrop-filter: blur(12px); padding: 1rem 0; border-bottom: 1px solid var(--border); }
-        .enhancer-active { border-color: #10b981 !important; color: #10b981 !important; box-shadow: 0 0 10px rgba(16, 185, 129, 0.2); }
-        .lock-active { color: #f87171 !important; }
+        .lora-tag { color: #f472b6 !important; border-color: #f472b6 !important; }
     </style>
 </head>
 <body class="p-4 md:p-6">
@@ -29,33 +24,35 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div class="bg-gray-950/20 p-4 rounded-xl border border-indigo-500/40">
                     <div class="flex justify-between items-center mb-2">
-                        <select id="modelSelect" onchange="updatePrompt()" class="bg-black/50 text-[10px] p-1.5 rounded border border-gray-700 outline-none text-indigo-400">
-                            <option value="pony">Pony Diffusion V6 (Explicit Focus)</option>
-                            <option value="xl">Illustration XL (High Quality)</option>
-                        </select>
+                        <div class="flex gap-2">
+                            <select id="modelSelect" onchange="updatePrompt()" class="bg-black/50 text-[10px] p-1.5 rounded border border-gray-700 text-indigo-400">
+                                <option value="pony">PONY V6 (ComfyUI)</option>
+                                <option value="xl">SDXL (ComfyUI)</option>
+                            </select>
+                            <select id="ratioSelect" onchange="updatePrompt()" class="bg-black/50 text-[10px] p-1.5 rounded border border-gray-700 text-green-400">
+                                <option value="1024x1024">1:1 (1024x1024)</option>
+                                <option value="832x1216">2:3 (832x1216)</option>
+                                <option value="1216x832">3:2 (1216x832)</option>
+                            </select>
+                        </div>
                         <div class="flex gap-2 items-center">
-                            <button onclick="toggleTheme()" class="text-lg px-2" title="Alternar Tema">🌓</button>
-                            <button id="enhancerBtn" onclick="toggleEnhancer()" class="text-[9px] border border-gray-700 px-2 py-1 rounded font-bold transition uppercase">✨ Enhancer</button>
-                            <button onclick="randomize()" class="text-[9px] bg-indigo-600 hover:bg-indigo-500 px-2 py-1 rounded font-bold transition uppercase">🎲 Random</button>
-                            <button onclick="saveToFavorites()" class="text-[9px] bg-green-800 hover:bg-green-700 px-2 py-1 rounded transition uppercase">⭐ Salvar</button>
-                            <button onclick="clearAll()" class="text-[9px] bg-red-950 px-2 py-1 rounded transition uppercase">Limpar</button>
+                            <button onclick="toggleTheme()" class="text-lg px-1">🌓</button>
+                            <button id="enhancerBtn" onclick="toggleEnhancer()" class="text-[9px] border border-gray-700 px-2 py-1 rounded font-bold uppercase">✨ Enhancer</button>
+                            <button onclick="randomize()" class="text-[9px] bg-indigo-600 px-2 py-1 rounded font-bold uppercase">🎲 Random</button>
+                            <button onclick="saveToFavorites()" class="text-[9px] bg-green-800 px-2 py-1 rounded transition uppercase">⭐ Salvar</button>
                         </div>
                     </div>
                     <textarea id="output" class="w-full bg-black/40 text-xs h-24 p-2 border border-gray-800 rounded mb-2 font-mono" readonly></textarea>
-                    <button onclick="copy('output')" class="w-full bg-indigo-600 hover:bg-indigo-500 text-[10px] font-black py-2.5 rounded uppercase tracking-widest">Copiar Prompt Positivo</button>
+                    <button onclick="copy('output')" class="w-full bg-indigo-600 text-[10px] font-black py-2.5 rounded uppercase tracking-widest">Copiar para ComfyUI</button>
                 </div>
 
-                <div class="bg-gray-950/20 p-4 rounded-xl border border-red-900/20 text-gray-400">
-                    <span class="text-[10px] font-bold text-red-500 block mb-1 uppercase tracking-widest">Negative Prompt</span>
+                <div class="bg-gray-950/20 p-4 rounded-xl border border-red-900/20">
+                    <span class="text-[10px] font-bold text-red-500 block mb-1 uppercase">Negative Prompt</span>
                     <textarea id="negativeOutput" class="w-full bg-black/40 text-xs h-24 p-2 border border-gray-800 rounded mb-2 font-mono text-gray-500" readonly></textarea>
-                    <button onclick="copy('negativeOutput')" class="w-full bg-red-900/40 hover:bg-red-900/60 text-[10px] font-bold py-2.5 rounded uppercase">Copiar Negativo</button>
+                    <button onclick="copy('negativeOutput')" class="w-full bg-red-900/40 text-[10px] font-bold py-2.5 rounded uppercase">Copiar Negativo</button>
                 </div>
             </div>
-            
-            <div class="mt-4 bg-black/20 p-3 rounded-xl border border-white/5 shadow-inner">
-                <span class="text-[9px] font-bold text-gray-500 block mb-2 uppercase tracking-widest">☁️ Sincronizado com Google Cloud</span>
-                <div id="favoritesList" class="flex flex-wrap gap-2 max-h-20 overflow-y-auto"></div>
-            </div>
+            <div id="favoritesList" class="mt-4 flex flex-wrap gap-2 max-h-20 overflow-y-auto"></div>
         </div>
 
         <div id="builder" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
@@ -65,6 +62,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+        // MANTENHA SEU CONFIG AQUI
         const firebaseConfig = {
             apiKey: "AIzaSyDDCA-De2_NIF5TWvMBOOLRRH2uvTN46Es",
             authDomain: "meugeradordeprompts.firebaseapp.com",
@@ -79,14 +77,14 @@
         const favsCollection = collection(db, "prompts");
 
         const categories = {
-            "👤 Rosto & Expressão": ["sexy smile", "smirking", "intense gaze", "orgasm face", "looking back", "biting lip", "sweaty face", "heavy breathing", "drool", "closed eyes", "blushing", "flushed face"],
-            "💪 Corpo & Detalhes": ["1man", "2men", "muscular hunk", "bear", "twink", "defined v-line", "massive biceps", "hairy chest", "veiny arms", "defined abs", "heavy glutes", "thick thighs", "pre-cum", "erection focus"],
-            "🍆 Posições": ["passionate intercourse", "missionary", "doggy style", "cowboy", "reverse cowboy", "oral sex", "rimming", "anal focus", "handjob", "frottage", "spooning", "all fours", "spanking"],
-            "👔 Roupa & Material": ["jockstrap", "leather harness", "latex", "shiny pvc", "rubber", "grey sweatpants", "white briefs", "suit and tie", "unbuttoned shirt", "soccer kit", "towel", "thong", "silk", "nude"],
-            "📸 Câmera & Ângulo": ["full body shot", "close-up", "extreme close-up", "from below", "from above", "side view", "back view", "wide angle", "fisheye lens", "bokeh background"],
-            "💡 Iluminação": ["volumetric lighting", "rim lighting", "cinematic lighting", "neon lights", "soft lighting", "dramatic shadows", "backlit", "dimly lit", "golden hour", "studio lighting"],
-            "📍 Ambiente": ["dark alley", "steamy shower", "gym locker", "leather bar", "luxury penthouse", "neon street", "sauna", "dungeon", "prison cell", "garage", "hotel room", "beach at night"],
-            "🎨 Estilo": ["digital illustration", "cel shaded", "flat color", "thick lines", "anime style", "high contrast", "comic book art", "concept art", "oil painting", "detailed shadows"]
+            "🧬 LoRAs (Comfy)": ["<lora:add_detail:0.8>", "<lora:muscle_anatomy:0.7>", "<lora:male_genitalia_fix:1.0>", "<lora:skin_texture_pvc:0.6>"],
+            "👤 Rosto": ["sexy smile", "orgasm face", "intense gaze", "biting lip", "sweaty face", "heavy breathing", "blushing"],
+            "💪 Físico": ["1man", "2men", "muscular hunk", "bear", "twink", "athletic", "hairy chest", "defined abs", "massive biceps", "thick thighs", "pre-cum"],
+            "🍆 Posições": ["missionary", "doggy style", "cowboy", "reverse cowboy", "oral sex", "rimming", "anal focus", "handjob", "frottage", "spooning", "spanking"],
+            "👔 Look": ["jockstrap", "leather harness", "latex", "shiny pvc", "grey sweatpants", "white briefs", "suit", "towel", "thong", "nude"],
+            "📸 Camera": ["full body", "close-up", "from below", "from above", "side view", "back view", "bokeh"],
+            "💡 Luz": ["volumetric lighting", "rim lighting", "cinematic", "neon lights", "dramatic shadows", "golden hour"],
+            "📍 Local": ["dark alley", "steamy shower", "gym locker", "leather bar", "sauna", "dungeon", "prison cell", "hotel room"]
         };
 
         let selectedTags = {}; 
@@ -95,56 +93,20 @@
         let enhancerEnabled = false;
 
         window.toggleTheme = () => document.body.classList.toggle('light-theme');
-
-        window.toggleLock = (cat) => {
-            lockedCategories[cat] = !lockedCategories[cat];
-            render();
-        };
-
-        window.toggleEnhancer = () => {
-            enhancerEnabled = !enhancerEnabled;
-            document.getElementById('enhancerBtn').classList.toggle('enhancer-active');
-            updatePrompt();
-        };
-
-        window.toggleTag = (tag) => {
-            selectedTags[tag] = !selectedTags[tag];
-            updatePrompt();
-            render();
-        };
-
-        window.toggleCategoryWeight = (cat) => {
-            categoryWeights[cat] = !categoryWeights[cat];
-            updatePrompt();
-            render();
-        };
-
-        window.saveToFavorites = async () => {
-            const p = document.getElementById('output').value;
-            if(!p) return;
-            await addDoc(favsCollection, { text: p, createdAt: new Date() });
-        };
-
-        window.deleteFromGoogle = async (id) => { if(confirm("Excluir?")) await deleteDoc(doc(db, "prompts", id)); };
-        
-        window.clearAll = () => { 
-            selectedTags = {}; categoryWeights = {}; enhancerEnabled = false; lockedCategories = {};
-            updatePrompt(); render(); 
-        };
-
-        window.copy = (id) => { const a = document.getElementById(id); a.select(); document.execCommand('copy'); };
+        window.toggleLock = (cat) => { lockedCategories[cat] = !lockedCategories[cat]; render(); };
+        window.toggleEnhancer = () => { enhancerEnabled = !enhancerEnabled; document.getElementById('enhancerBtn').classList.toggle('enhancer-active'); updatePrompt(); };
+        window.toggleTag = (tag) => { selectedTags[tag] = !selectedTags[tag]; updatePrompt(); render(); };
+        window.toggleCategoryWeight = (cat) => { categoryWeights[cat] = !categoryWeights[cat]; updatePrompt(); render(); };
+        window.clearAll = () => { selectedTags = {}; categoryWeights = {}; enhancerEnabled = false; updatePrompt(); render(); };
+        window.copy = (id) => { const a = document.getElementById(id); a.select(); document.execCommand('copy'); alert("Copiado!"); };
 
         window.randomize = () => {
             Object.entries(categories).forEach(([cat, opts]) => {
                 if (!lockedCategories[cat]) {
-                    // Limpa tags atuais da categoria não bloqueada
                     opts.forEach(o => delete selectedTags[o]);
-                    categoryWeights[cat] = false;
-
                     if (Math.random() > 0.4) {
                         const r = opts[Math.floor(Math.random() * opts.length)];
                         selectedTags[r] = true;
-                        if (Math.random() > 0.7) categoryWeights[cat] = true;
                     }
                 }
             });
@@ -161,10 +123,10 @@
                 section.innerHTML = `
                     <div class="flex justify-between items-center mb-3 border-b border-gray-800 pb-2">
                         <div class="flex items-center gap-2">
-                            <button onclick="toggleLock('${cat}')" class="text-xs ${isLocked ? 'lock-active' : 'text-gray-600'}">${isLocked ? '🔒' : '🔓'}</button>
-                            <h3 class="text-[9px] font-black text-indigo-400 uppercase tracking-widest">${cat}</h3>
+                            <button onclick="toggleLock('${cat}')" class="text-xs">${isLocked ? '🔒' : '🔓'}</button>
+                            <h3 class="text-[9px] font-black text-indigo-400 uppercase">${cat}</h3>
                         </div>
-                        <button onclick="toggleCategoryWeight('${cat}')" class="text-[8px] ${categoryWeights[cat] ? 'bg-yellow-600 text-black' : 'bg-gray-800 text-gray-500'} px-2 py-0.5 rounded font-bold">PESO+</button>
+                        <button onclick="toggleCategoryWeight('${cat}')" class="text-[8px] ${categoryWeights[cat] ? 'bg-yellow-600 text-black' : 'bg-gray-800 text-gray-500'} px-2 py-0.5 rounded">PESO+</button>
                     </div>
                 `;
                 const grid = document.createElement('div');
@@ -173,7 +135,8 @@
                     const btn = document.createElement('button');
                     btn.innerText = opt;
                     const isSelected = selectedTags[opt];
-                    btn.className = `btn-opt p-2 rounded text-left ${isSelected ? 'active' : ''} ${isSelected && categoryWeights[cat] ? 'weighted' : ''}`;
+                    const isLora = opt.includes('<lora');
+                    btn.className = `btn-opt p-2 rounded text-left ${isSelected ? 'active' : ''} ${isSelected && categoryWeights[cat] ? 'weighted' : ''} ${isLora ? 'lora-tag' : ''}`;
                     btn.onclick = () => toggleTag(opt);
                     grid.appendChild(btn);
                 });
@@ -184,24 +147,29 @@
 
         function updatePrompt() {
             const model = document.getElementById('modelSelect').value;
+            const ratio = document.getElementById('ratioSelect').value;
             let tags = [];
-            if(selectedTags["2men"] || selectedTags["gay couple"]) delete selectedTags["1man"];
+            let loras = [];
 
-            for(const [cat, opts] of Object.entries(categories)) {
-                opts.forEach(opt => {
-                    if(selectedTags[opt]) tags.push(categoryWeights[cat] ? `(${opt}:1.3)` : opt);
-                });
+            for(const tag in selectedTags) {
+                if(selectedTags[tag]) {
+                    if(tag.includes('<lora')) loras.push(tag);
+                    else {
+                        // Encontra a categoria para checar peso
+                        let cat = Object.keys(categories).find(c => categories[c].includes(tag));
+                        tags.push(categoryWeights[cat] ? `(${tag}:1.3)` : tag);
+                    }
+                }
             }
 
-            const enhancerTags = enhancerEnabled ? ", (extremely detailed skin texture:1.2), highly defined musculature, subsurface scattering, realistic lighting" : "";
+            const enhancer = enhancerEnabled ? ", (skin texture:1.2), high detail, realistic lighting" : "";
+            
             let pos = model === "pony" 
-                ? `score_9, score_8, score_7, rating_explicit, source_anime, ${tags.join(", ")}${enhancerTags}`
-                : `masterpiece, high quality, ${tags.join(", ")}${enhancerTags}, illustration, male focus`;
+                ? `score_9, score_8, score_7, rating_explicit, ${tags.join(", ")}${enhancer} ${loras.join(" ")}`
+                : `masterpiece, high quality, ${tags.join(", ")}${enhancer} ${loras.join(" ")}`;
 
-            document.getElementById('output').value = pos;
-            document.getElementById('negativeOutput').value = model === "pony" 
-                ? "score_4, score_5, score_6, low quality, bad anatomy, female, woman, blurred, distorted genitals" 
-                : "female, woman, lowres, bad anatomy, photo, realistic, blurred, text";
+            document.getElementById('output').value = `[Res: ${ratio}] \n` + pos;
+            document.getElementById('negativeOutput').value = "female, woman, girl, low quality, bad anatomy, text, distorted";
         }
 
         onSnapshot(query(favsCollection, orderBy("createdAt", "desc")), (snap) => {
@@ -211,7 +179,7 @@
                 const data = doc.data();
                 const item = document.createElement('div');
                 item.className = "flex items-center bg-gray-500/10 border border-gray-800 rounded px-2 py-1";
-                item.innerHTML = `<button onclick="navigator.clipboard.writeText('${data.text.replace(/'/g, "\\'")}'); alert('Copiado!')" class="text-[8px] mr-2 max-w-[150px] truncate">${data.text}</button><button onclick="deleteFromGoogle('${doc.id}')" class="text-red-500">×</button>`;
+                item.innerHTML = `<button onclick="navigator.clipboard.writeText('${data.text.replace(/'/g, "\\'")}');" class="text-[8px] mr-2 max-w-[120px] truncate text-gray-500">${data.text}</button><button onclick="deleteFromGoogle('${doc.id}')" class="text-red-500 text-[10px]">×</button>`;
                 list.appendChild(item);
             });
         });
