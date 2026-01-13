@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ComfyUI Command Center - Male Art</title>
+    <title>ComfyUI Command Center - Male Art V4</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root { --bg: #030303; --card: #0a0a0a; --text: #e5e7eb; --border: #1a1a1a; --header: rgba(3, 3, 3, 0.9); }
@@ -14,7 +14,9 @@
         .btn-opt.weighted::after { content: '1.3'; position: absolute; top: -5px; right: -5px; background: #fbbf24; color: black; font-size: 0.5rem; padding: 1px 3px; border-radius: 4px; font-weight: bold; }
         .section-card { background: var(--card); border-radius: 12px; padding: 1rem; border: 1px solid var(--border); }
         .sticky-header { position: sticky; top: 0; z-index: 100; background: var(--header); backdrop-filter: blur(12px); padding: 1rem 0; border-bottom: 1px solid var(--border); }
-        .lora-tag { color: #f472b6 !important; border-color: #f472b6 !important; }
+        .lora-tag { color: #f472b6 !important; border-color: #f472b6/30 !important; font-style: italic; }
+        .lock-active { color: #f87171 !important; }
+        .enhancer-active { border-color: #10b981 !important; color: #10b981 !important; }
     </style>
 </head>
 <body class="p-4 md:p-6">
@@ -22,14 +24,14 @@
     <div class="max-w-7xl mx-auto">
         <div class="sticky-header mb-6">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <div class="bg-gray-950/20 p-4 rounded-xl border border-indigo-500/40">
+                <div class="bg-gray-950/20 p-4 rounded-xl border border-indigo-500/40 shadow-2xl">
                     <div class="flex justify-between items-center mb-2">
                         <div class="flex gap-2">
-                            <select id="modelSelect" onchange="updatePrompt()" class="bg-black/50 text-[10px] p-1.5 rounded border border-gray-700 text-indigo-400">
-                                <option value="pony">PONY V6 (ComfyUI)</option>
-                                <option value="xl">SDXL (ComfyUI)</option>
+                            <select id="modelSelect" onchange="updatePrompt()" class="bg-black/80 text-[10px] p-1.5 rounded border border-gray-700 text-indigo-400">
+                                <option value="pony">PONY V6 (Explicit)</option>
+                                <option value="xl">SDXL (Illustration)</option>
                             </select>
-                            <select id="ratioSelect" onchange="updatePrompt()" class="bg-black/50 text-[10px] p-1.5 rounded border border-gray-700 text-green-400">
+                            <select id="ratioSelect" onchange="updatePrompt()" class="bg-black/80 text-[10px] p-1.5 rounded border border-gray-700 text-green-400">
                                 <option value="1024x1024">1:1 (1024x1024)</option>
                                 <option value="832x1216">2:3 (832x1216)</option>
                                 <option value="1216x832">3:2 (1216x832)</option>
@@ -40,19 +42,24 @@
                             <button id="enhancerBtn" onclick="toggleEnhancer()" class="text-[9px] border border-gray-700 px-2 py-1 rounded font-bold uppercase">✨ Enhancer</button>
                             <button onclick="randomize()" class="text-[9px] bg-indigo-600 px-2 py-1 rounded font-bold uppercase">🎲 Random</button>
                             <button onclick="saveToFavorites()" class="text-[9px] bg-green-800 px-2 py-1 rounded transition uppercase">⭐ Salvar</button>
+                            <button onclick="clearAll()" class="text-[9px] bg-red-950 px-2 py-1 rounded uppercase">Limpar</button>
                         </div>
                     </div>
-                    <textarea id="output" class="w-full bg-black/40 text-xs h-24 p-2 border border-gray-800 rounded mb-2 font-mono" readonly></textarea>
-                    <button onclick="copy('output')" class="w-full bg-indigo-600 text-[10px] font-black py-2.5 rounded uppercase tracking-widest">Copiar para ComfyUI</button>
+                    <textarea id="output" class="w-full bg-black/40 text-[11px] h-28 p-2 border border-gray-800 rounded mb-2 font-mono leading-tight" readonly></textarea>
+                    <button onclick="copy('output')" class="w-full bg-indigo-600 text-[10px] font-black py-3 rounded uppercase tracking-widest shadow-lg active:scale-95 transition">Copiar Prompt Positivo</button>
                 </div>
 
                 <div class="bg-gray-950/20 p-4 rounded-xl border border-red-900/20">
-                    <span class="text-[10px] font-bold text-red-500 block mb-1 uppercase">Negative Prompt</span>
-                    <textarea id="negativeOutput" class="w-full bg-black/40 text-xs h-24 p-2 border border-gray-800 rounded mb-2 font-mono text-gray-500" readonly></textarea>
-                    <button onclick="copy('negativeOutput')" class="w-full bg-red-900/40 text-[10px] font-bold py-2.5 rounded uppercase">Copiar Negativo</button>
+                    <span class="text-[10px] font-bold text-red-500 block mb-1 uppercase tracking-widest">Negative Prompt</span>
+                    <textarea id="negativeOutput" class="w-full bg-black/40 text-[11px] h-28 p-2 border border-gray-800 rounded mb-2 font-mono text-gray-500" readonly></textarea>
+                    <button onclick="copy('negativeOutput')" class="w-full bg-red-900/40 text-[10px] font-bold py-3 rounded uppercase active:scale-95 transition">Copiar Negativo</button>
                 </div>
             </div>
-            <div id="favoritesList" class="mt-4 flex flex-wrap gap-2 max-h-20 overflow-y-auto"></div>
+            
+            <div class="mt-4 bg-black/20 p-3 rounded-xl border border-white/5">
+                <span class="text-[9px] font-bold text-gray-500 block mb-2 uppercase">☁️ Favoritos no Google Firestore</span>
+                <div id="favoritesList" class="flex flex-wrap gap-2 max-h-24 overflow-y-auto"></div>
+            </div>
         </div>
 
         <div id="builder" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
@@ -62,10 +69,10 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // MANTENHA SEU CONFIG AQUI
+        // COLOQUE SEU CONFIG AQUI
         const firebaseConfig = {
             apiKey: "AIzaSyDDCA-De2_NIF5TWvMBOOLRRH2uvTN46Es",
-            authDomain: "meugeradordeprompts.firebaseapp.com",
+            authDomain: "meugeradordeprompts.firebaseapp.app",
             projectId: "meugeradordeprompts",
             storageBucket: "meugeradordeprompts.firebasestorage.app",
             messagingSenderId: "301051793324",
@@ -76,18 +83,27 @@
         const db = getFirestore(app);
         const favsCollection = collection(db, "prompts");
 
+        // DEFINIÇÃO DE LORAS: [Nome Visível, Trigger Word, Nome do Arquivo LoRA]
+        const loraData = [
+            ["Hi-Detail", "extremely detailed", "add_detail"],
+            ["Muscle Flex", "muscular anatomy", "muscle_hunk_v2"],
+            ["Wet Skin", "sweaty skin, glistening", "wet_skin_texture"],
+            ["PVC Style", "shiny pvc material", "pvc_latex_pony"],
+            ["Hairy Body", "chest hair, hairy body", "bear_hairy_lora"]
+        ];
+
         const categories = {
-            "🧬 LoRAs (Comfy)": ["<lora:add_detail:0.8>", "<lora:muscle_anatomy:0.7>", "<lora:male_genitalia_fix:1.0>", "<lora:skin_texture_pvc:0.6>"],
-            "👤 Rosto": ["sexy smile", "orgasm face", "intense gaze", "biting lip", "sweaty face", "heavy breathing", "blushing"],
-            "💪 Físico": ["1man", "2men", "muscular hunk", "bear", "twink", "athletic", "hairy chest", "defined abs", "massive biceps", "thick thighs", "pre-cum"],
-            "🍆 Posições": ["missionary", "doggy style", "cowboy", "reverse cowboy", "oral sex", "rimming", "anal focus", "handjob", "frottage", "spooning", "spanking"],
-            "👔 Look": ["jockstrap", "leather harness", "latex", "shiny pvc", "grey sweatpants", "white briefs", "suit", "towel", "thong", "nude"],
-            "📸 Camera": ["full body", "close-up", "from below", "from above", "side view", "back view", "bokeh"],
-            "💡 Luz": ["volumetric lighting", "rim lighting", "cinematic", "neon lights", "dramatic shadows", "golden hour"],
-            "📍 Local": ["dark alley", "steamy shower", "gym locker", "leather bar", "sauna", "dungeon", "prison cell", "hotel room"]
+            "👤 Rosto & Clímax": ["sexy smile", "orgasm face", "intense gaze", "biting lip", "sweaty face", "heavy breathing", "drool", "blushing", "flushed face"],
+            "💪 Tipo de Corpo": ["1man", "2men", "muscular hunk", "bear", "twink", "athletic build", "defined v-line", "massive biceps", "hairy chest", "defined abs", "thick thighs"],
+            "🍆 Posições Sexuais": ["passionate intercourse", "missionary", "doggy style", "cowboy", "reverse cowboy", "oral sex", "rimming", "anal focus", "handjob", "frottage", "spanking"],
+            "👔 Roupa & Fetiche": ["jockstrap", "leather harness", "latex", "shiny pvc", "rubber", "grey sweatpants", "white briefs", "suit and tie", "towel", "thong", "silk robe", "nude"],
+            "📸 Camera & Proporção": ["full body shot", "close-up", "extreme close-up", "from below", "from above", "side view", "back view", "wide angle", "bokeh"],
+            "💡 Luz & Ambiente": ["volumetric lighting", "rim lighting", "cinematic", "neon lights", "dramatic shadows", "dark alley", "steamy shower", "gym locker room", "sauna", "dungeon"],
+            "🎨 Estilo Artístico": ["digital illustration", "cel shaded", "flat color", "thick lines", "anime style", "high contrast", "comic book", "oil painting"]
         };
 
         let selectedTags = {}; 
+        let selectedLoras = {}; // Guarda { trigger: filename }
         let categoryWeights = {};
         let lockedCategories = {};
         let enhancerEnabled = false;
@@ -95,10 +111,22 @@
         window.toggleTheme = () => document.body.classList.toggle('light-theme');
         window.toggleLock = (cat) => { lockedCategories[cat] = !lockedCategories[cat]; render(); };
         window.toggleEnhancer = () => { enhancerEnabled = !enhancerEnabled; document.getElementById('enhancerBtn').classList.toggle('enhancer-active'); updatePrompt(); };
-        window.toggleTag = (tag) => { selectedTags[tag] = !selectedTags[tag]; updatePrompt(); render(); };
         window.toggleCategoryWeight = (cat) => { categoryWeights[cat] = !categoryWeights[cat]; updatePrompt(); render(); };
-        window.clearAll = () => { selectedTags = {}; categoryWeights = {}; enhancerEnabled = false; updatePrompt(); render(); };
+        window.clearAll = () => { selectedTags = {}; selectedLoras = {}; categoryWeights = {}; enhancerEnabled = false; updatePrompt(); render(); };
         window.copy = (id) => { const a = document.getElementById(id); a.select(); document.execCommand('copy'); alert("Copiado!"); };
+
+        window.toggleTag = (tag) => {
+            selectedTags[tag] = !selectedTags[tag];
+            updatePrompt();
+            render();
+        };
+
+        window.toggleLora = (trigger, filename) => {
+            if (selectedLoras[trigger]) delete selectedLoras[trigger];
+            else selectedLoras[trigger] = filename;
+            updatePrompt();
+            render();
+        };
 
         window.randomize = () => {
             Object.entries(categories).forEach(([cat, opts]) => {
@@ -116,6 +144,24 @@
         function render() {
             const container = document.getElementById('builder');
             container.innerHTML = '';
+
+            // Renderizar LoRAs primeiro
+            const loraSection = document.createElement('div');
+            loraSection.className = "section-card";
+            loraSection.innerHTML = `<h3 class="text-[9px] font-black text-pink-400 uppercase tracking-widest mb-3 border-b border-gray-800 pb-2">🧬 LoRAs (Trigger + Tag)</h3>`;
+            const loraGrid = document.createElement('div');
+            loraGrid.className = "grid grid-cols-2 gap-1.5";
+            loraData.forEach(([label, trigger, file]) => {
+                const btn = document.createElement('button');
+                btn.innerText = label;
+                btn.className = `btn-opt p-2 rounded text-left lora-tag ${selectedLoras[trigger] ? 'active' : ''}`;
+                btn.onclick = () => toggleLora(trigger, file);
+                loraGrid.appendChild(btn);
+            });
+            loraSection.appendChild(loraGrid);
+            container.appendChild(loraSection);
+
+            // Renderizar Categorias Normais
             for (const [cat, options] of Object.entries(categories)) {
                 const isLocked = lockedCategories[cat];
                 const section = document.createElement('div');
@@ -126,7 +172,7 @@
                             <button onclick="toggleLock('${cat}')" class="text-xs">${isLocked ? '🔒' : '🔓'}</button>
                             <h3 class="text-[9px] font-black text-indigo-400 uppercase">${cat}</h3>
                         </div>
-                        <button onclick="toggleCategoryWeight('${cat}')" class="text-[8px] ${categoryWeights[cat] ? 'bg-yellow-600 text-black' : 'bg-gray-800 text-gray-500'} px-2 py-0.5 rounded">PESO+</button>
+                        <button onclick="toggleCategoryWeight('${cat}')" class="text-[8px] ${categoryWeights[cat] ? 'bg-yellow-600 text-black' : 'bg-gray-800 text-gray-500'} px-2 py-0.5 rounded font-bold">PESO+</button>
                     </div>
                 `;
                 const grid = document.createElement('div');
@@ -135,8 +181,7 @@
                     const btn = document.createElement('button');
                     btn.innerText = opt;
                     const isSelected = selectedTags[opt];
-                    const isLora = opt.includes('<lora');
-                    btn.className = `btn-opt p-2 rounded text-left ${isSelected ? 'active' : ''} ${isSelected && categoryWeights[cat] ? 'weighted' : ''} ${isLora ? 'lora-tag' : ''}`;
+                    btn.className = `btn-opt p-2 rounded text-left ${isSelected ? 'active' : ''} ${isSelected && categoryWeights[cat] ? 'weighted' : ''}`;
                     btn.onclick = () => toggleTag(opt);
                     grid.appendChild(btn);
                 });
@@ -149,29 +194,35 @@
             const model = document.getElementById('modelSelect').value;
             const ratio = document.getElementById('ratioSelect').value;
             let tags = [];
-            let loras = [];
+            let loraSyntaxes = [];
 
-            for(const tag in selectedTags) {
-                if(selectedTags[tag]) {
-                    if(tag.includes('<lora')) loras.push(tag);
-                    else {
-                        // Encontra a categoria para checar peso
-                        let cat = Object.keys(categories).find(c => categories[c].includes(tag));
-                        tags.push(categoryWeights[cat] ? `(${tag}:1.3)` : tag);
-                    }
+            // Adiciona Tags normais com peso
+            for (const tag in selectedTags) {
+                if (selectedTags[tag]) {
+                    let cat = Object.keys(categories).find(c => categories[c].includes(tag));
+                    tags.push(categoryWeights[cat] ? `(${tag}:1.3)` : tag);
                 }
             }
 
-            const enhancer = enhancerEnabled ? ", (skin texture:1.2), high detail, realistic lighting" : "";
+            // Adiciona Trigger Words no corpo e <lora> no final
+            for (const trigger in selectedLoras) {
+                tags.push(trigger);
+                loraSyntaxes.push(`<lora:${selectedLoras[trigger]}:1.0>`);
+            }
+
+            const enhancer = enhancerEnabled ? ", (extremely detailed skin texture:1.2), realistic lighting, defined musculature" : "";
             
             let pos = model === "pony" 
-                ? `score_9, score_8, score_7, rating_explicit, ${tags.join(", ")}${enhancer} ${loras.join(" ")}`
-                : `masterpiece, high quality, ${tags.join(", ")}${enhancer} ${loras.join(" ")}`;
+                ? `score_9, score_8, score_7, rating_explicit, source_anime, ${tags.join(", ")}${enhancer} ${loraSyntaxes.join(" ")}`
+                : `masterpiece, high quality, ${tags.join(", ")}${enhancer} ${loraSyntaxes.join(" ")}`;
 
             document.getElementById('output').value = `[Res: ${ratio}] \n` + pos;
-            document.getElementById('negativeOutput').value = "female, woman, girl, low quality, bad anatomy, text, distorted";
+            document.getElementById('negativeOutput').value = model === "pony" 
+                ? "score_4, score_5, score_6, female, woman, low quality, bad anatomy, text, distorted genitals" 
+                : "female, woman, lowres, bad anatomy, blurred, extra fingers, text";
         }
 
+        // Favoritos Firestore
         onSnapshot(query(favsCollection, orderBy("createdAt", "desc")), (snap) => {
             const list = document.getElementById('favoritesList');
             list.innerHTML = "";
@@ -179,10 +230,17 @@
                 const data = doc.data();
                 const item = document.createElement('div');
                 item.className = "flex items-center bg-gray-500/10 border border-gray-800 rounded px-2 py-1";
-                item.innerHTML = `<button onclick="navigator.clipboard.writeText('${data.text.replace(/'/g, "\\'")}');" class="text-[8px] mr-2 max-w-[120px] truncate text-gray-500">${data.text}</button><button onclick="deleteFromGoogle('${doc.id}')" class="text-red-500 text-[10px]">×</button>`;
+                item.innerHTML = `<button onclick="navigator.clipboard.writeText('${data.text.replace(/'/g, "\\'")}'); alert('Copiado!')" class="text-[8px] mr-2 max-w-[120px] truncate text-gray-400">${data.text}</button><button onclick="deleteFromGoogle('${doc.id}')" class="text-red-500 text-[10px] ml-1">×</button>`;
                 list.appendChild(item);
             });
         });
+
+        window.saveToFavorites = async () => {
+            const p = document.getElementById('output').value;
+            if(!p) return;
+            await addDoc(favsCollection, { text: p, createdAt: new Date() });
+        };
+        window.deleteFromGoogle = async (id) => { if(confirm("Excluir?")) await deleteDoc(doc(db, "prompts", id)); };
 
         render(); updatePrompt();
     </script>
