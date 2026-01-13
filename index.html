@@ -3,53 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prompt Builder - Illustration XL</title>
+    <title>Master Prompt Builder - Illustration XL</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .active { background-color: #4f46e5 !important; color: white; }
-        .category-title { border-left: 4px solid #4f46e5; padding-left: 10px; margin-top: 20px; font-weight: bold; }
+        .active { background-color: #4f46e5 !important; color: white; ring: 2px solid #818cf8; }
+        .category-title { border-left: 4px solid #4f46e5; padding-left: 10px; margin-top: 25px; font-weight: bold; color: #a5b4fc; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 10px; }
     </style>
 </head>
-<body class="bg-gray-900 text-gray-100 p-8">
+<body class="bg-gray-950 text-gray-100 p-4 md:p-8">
 
-    <div class="max-w-4xl mx-auto">
-        <h1 class="text-3xl font-bold mb-6 text-center text-indigo-400">Male Illustration Prompt Builder</h1>
+    <div class="max-w-5xl mx-auto">
+        <h1 class="text-4xl font-extrabold mb-2 text-center text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
+            Male Illustration Prompt Builder
+        </h1>
+        <p class="text-center text-gray-400 mb-8 text-sm uppercase tracking-widest">Otimizado para Illustration XL</p>
         
-        <div class="sticky top-4 bg-gray-800 p-4 rounded-xl shadow-2xl border border-indigo-500 mb-8 z-50">
-            <label class="block text-sm font-medium mb-2 text-indigo-300">Prompt Gerado:</label>
-            <textarea id="output" class="w-full bg-gray-900 border border-gray-700 rounded p-3 text-white h-24 mb-3" readonly></textarea>
-            <button onclick="copyPrompt()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded transition">Copiar Prompt</button>
+        <div class="sticky top-4 bg-gray-900/95 backdrop-blur-md p-5 rounded-2xl shadow-2xl border border-indigo-500/30 mb-10 z-50">
+            <div class="flex justify-between items-end mb-2">
+                <label class="text-xs font-bold text-indigo-400 uppercase">Prompt Gerado</label>
+                <div class="space-x-2">
+                    <button onclick="randomize()" class="bg-purple-600 hover:bg-purple-500 text-white text-xs px-3 py-1 rounded-md font-bold transition">🎲 RANDOM</button>
+                    <button onclick="clearAll()" class="bg-red-900/50 hover:bg-red-800 text-white text-xs px-3 py-1 rounded-md font-bold transition">LIMPAR</button>
+                </div>
+            </div>
+            <textarea id="output" class="w-full bg-black/50 border border-gray-700 rounded-lg p-3 text-sm text-gray-200 h-28 mb-4 focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Selecione as opções abaixo..."></textarea>
+            <button onclick="copyPrompt()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg active:scale-95">Copiar para o Gerador de IA</button>
         </div>
 
-        <div id="builder">
+        <div id="builder" class="grid grid-cols-1 md:grid-cols-2 gap-x-8">
             </div>
     </div>
 
     <script>
         const categories = {
-            "Estilo de Ilustração": ["illustration style", "cel shaded", "flat color", "thick lines", "digital painting", "high contrast"],
-            "Posições (Solo)": ["standing", "sitting", "lying down", "kneeling", "leaning against wall", "squatting", "back view"],
-            "Posições Sexuais / Intimidade": ["gay couple", "passionate kiss", "missionary position", "doggy style", "guy on top", "holding waist", "embracing from behind", "all fours"],
-            "Roupas Casuais/Formais": ["t-shirt", "hoodie", "jeans", "business suit", "tank top", "unbuttoned shirt", "briefs", "boxers"],
-            "Roupas Fetiche/Sexuais": ["jockstrap", "leather harness", "latex gear", "spandex", "bulge focus", "shirtless", "nude", "half-undressed"],
-            "Cenário": ["bedroom", "dark alley", "gym", "bathroom", "outdoor park", "studio background", "neon lights"]
+            "Tipo Físico": ["muscular hunk", "twink", "bear (hairy and husky)", "daddy", "athletic build", "buff bodybuilder", "slim and toned", "hairy chest", "defined abs", "thick thighs", "bearded man"],
+            
+            "Posições Sexuais / Gay Art": ["gay couple", "intercourse", "missionary position", "doggy style", "cowboy position", "oral sex", "rimming", "holding waist", "man on top", "embracing from behind", "deep kiss", "all fours"],
+            
+            "Roupas Sexuais / Fetiche": ["jockstrap", "leather harness", "latex gear", "spandex shorts", "rubber suit", "bondage gear", "shirtless", "nude", "half-undressed", "crotchless briefs", "lingerie for men", "satin boxers"],
+            
+            "Roupas e Uniformes": ["suit and tie", "unbuttoned dress shirt", "hoodie and jeans", "soccer kit", "police uniform", "military gear", "mechanic jumpsuit", "gym tank top", "towel around waist"],
+            
+            "Ambientes": ["dark alleyway", "steamy shower", "luxury penthouse", "gym locker room", "outdoor forest", "leather bar", "neon cyberpunk street", "industrial warehouse", "messy bedroom", "underground club", "beach at night"],
+            
+            "Posições Solo": ["standing", "sitting on chair", "lying on bed", "kneeling", "leaning against wall", "squatting", "back view", "showing bulge", "hand on crotch"],
+            
+            "Estilo Visual": ["digital illustration", "flat color", "cel shaded", "thick lines", "anime style", "high contrast", "oil painting style", "vintage comic book"]
         };
 
-        const selections = {};
+        let selections = {};
 
         function renderButtons() {
             const container = document.getElementById('builder');
             for (const [category, options] of Object.entries(categories)) {
                 const div = document.createElement('div');
-                div.innerHTML = `<h3 class="category-title text-xl mb-3 text-indigo-300">${category}</h3>`;
+                div.className = "mb-4";
+                div.innerHTML = `<h3 class="category-title text-lg mb-3">${category}</h3>`;
                 const btnContainer = document.createElement('div');
-                btnContainer.className = "flex flex-wrap gap-2 mb-6";
+                btnContainer.className = "flex flex-wrap gap-2";
                 
                 options.forEach(opt => {
                     const btn = document.createElement('button');
                     btn.innerText = opt;
-                    btn.className = "bg-gray-800 hover:bg-gray-700 border border-gray-600 px-3 py-1 rounded-full text-sm transition";
-                    btn.onclick = () => toggleOption(category, opt, btn);
+                    btn.id = `btn-${opt}`;
+                    btn.className = "bg-gray-800 hover:bg-gray-700 border border-gray-700 px-3 py-1.5 rounded-lg text-xs transition-all";
+                    btn.onclick = () => toggleOption(category, opt);
                     btnContainer.appendChild(btn);
                 });
                 div.appendChild(btnContainer);
@@ -57,36 +77,61 @@
             }
         }
 
-        function toggleOption(cat, opt, el) {
+        function toggleOption(cat, opt) {
             if (!selections[cat]) selections[cat] = new Set();
             
+            const btn = document.getElementById(`btn-${opt}`);
             if (selections[cat].has(opt)) {
                 selections[cat].delete(opt);
-                el.classList.remove('active');
+                if(btn) btn.classList.remove('active');
             } else {
                 selections[cat].add(opt);
-                el.classList.add('active');
+                if(btn) btn.classList.add('active');
             }
             updatePrompt();
         }
 
         function updatePrompt() {
             let finalPrompt = [];
-            for (const cat in selections) {
-                if (selections[cat].size > 0) {
+            const order = ["Tipo Físico", "Posições Sexuais / Gay Art", "Posições Solo", "Roupas Sexuais / Fetiche", "Roupas e Uniformes", "Ambientes", "Estilo Visual"];
+            
+            order.forEach(cat => {
+                if (selections[cat] && selections[cat].size > 0) {
                     finalPrompt.push(Array.from(selections[cat]).join(", "));
                 }
+            });
+
+            const prefix = "A high-quality digital illustration of";
+            const suffix = "masterpiece, sharp focus, 8k, detailed anatomy, highly detailed";
+            
+            document.getElementById('output').value = finalPrompt.length > 0 
+                ? `${prefix} ${finalPrompt.join(", ")}, ${suffix}` 
+                : "";
+        }
+
+        function randomize() {
+            clearAll();
+            for (const [category, options] of Object.entries(categories)) {
+                // Sorteia se essa categoria vai entrar no random (80% de chance)
+                if (Math.random() > 0.2) {
+                    const randomOption = options[Math.floor(Math.random() * options.length)];
+                    toggleOption(category, randomOption);
+                }
             }
-            // Adiciona qualidade padrão para Illustration XL
-            const suffix = "masterpiece, high quality, sharp focus, 8k";
-            document.getElementById('output').value = finalPrompt.join(", ") + (finalPrompt.length > 0 ? ", " + suffix : "");
+        }
+
+        function clearAll() {
+            selections = {};
+            document.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+            updatePrompt();
         }
 
         function copyPrompt() {
             const copyText = document.getElementById("output");
+            if (!copyText.value) return alert("Selecione algo primeiro!");
             copyText.select();
             document.execCommand("copy");
-            alert("Prompt copiado!");
+            alert("Prompt copiado com sucesso!");
         }
 
         renderButtons();
