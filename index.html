@@ -3,59 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Art Studio Pro - Cloud Edition</title>
+    <title>AI Art Studio Pro - Ultimate Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #050505; color: #e5e7eb; font-family: 'Inter', sans-serif; }
-        .btn-opt { background: #1a1a1a; border: 1px solid #333; transition: all 0.2s; cursor: pointer; font-size: 0.75rem; position: relative; }
-        .btn-opt.active { background: #4f46e5; border-color: #818cf8; color: white; }
-        .btn-opt.weighted::after { content: '1.3'; position: absolute; top: -5px; right: -5px; background: #fbbf24; color: black; font-size: 0.6rem; padding: 1px 3px; border-radius: 4px; font-weight: bold; }
-        .section-card { background: #111; border-radius: 12px; padding: 1rem; border: 1px solid #222; margin-bottom: 1rem; }
-        .sticky-header { position: sticky; top: 0; z-index: 100; background: rgba(5, 5, 5, 0.95); backdrop-filter: blur(10px); padding: 1rem 0; border-bottom: 1px solid #333; }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        body { background-color: #030303; color: #e5e7eb; font-family: 'Inter', sans-serif; }
+        .btn-opt { background: #111; border: 1px solid #222; transition: all 0.2s; cursor: pointer; font-size: 0.7rem; position: relative; }
+        .btn-opt.active { background: #4f46e5; border-color: #818cf8; color: white; box-shadow: 0 0 15px rgba(79, 70, 229, 0.3); }
+        .btn-opt.weighted::after { content: '1.3'; position: absolute; top: -5px; right: -5px; background: #fbbf24; color: black; font-size: 0.5rem; padding: 1px 3px; border-radius: 4px; font-weight: bold; }
+        .section-card { background: #0a0a0a; border-radius: 12px; padding: 1rem; border: 1px solid #1a1a1a; }
+        .sticky-header { position: sticky; top: 0; z-index: 100; background: rgba(3, 3, 3, 0.9); backdrop-filter: blur(12px); padding: 1rem 0; border-bottom: 1px solid #222; }
+        .enhancer-active { border-color: #10b981 !important; color: #10b981 !important; box-shadow: 0 0 10px rgba(16, 185, 129, 0.2); }
     </style>
 </head>
 <body class="p-4 md:p-6">
 
-    <div class="max-w-6xl mx-auto">
-        <div class="sticky-header">
+    <div class="max-w-7xl mx-auto">
+        <div class="sticky-header mb-6">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <div class="bg-gray-900 p-4 rounded-xl border border-indigo-500/50">
+                <div class="bg-gray-950 p-4 rounded-xl border border-indigo-500/40">
                     <div class="flex justify-between items-center mb-2">
-                        <select id="modelSelect" onchange="updatePrompt()" class="bg-gray-800 text-[10px] p-1 rounded border border-gray-600 outline-none text-indigo-300">
-                            <option value="pony">MODELO: Pony Diffusion V6 (Recomendado)</option>
-                            <option value="xl">MODELO: Illustration XL (SDXL)</option>
-                            <option value="sd15">MODELO: Standard SD 1.5</option>
+                        <select id="modelSelect" onchange="updatePrompt()" class="bg-black text-[10px] p-1.5 rounded border border-gray-700 outline-none text-indigo-400">
+                            <option value="pony">Pony Diffusion V6 (Explicit Focus)</option>
+                            <option value="xl">Illustration XL (High Quality)</option>
                         </select>
                         <div class="flex gap-2">
-                            <button onclick="saveToFavorites()" class="text-[10px] bg-green-700 hover:bg-green-600 px-2 py-1 rounded transition">⭐ SALVAR NUVEM</button>
-                            <button onclick="randomize()" class="text-[10px] bg-indigo-600 px-2 py-1 rounded">🎲 RANDOM</button>
-                            <button onclick="clearAll()" class="text-[10px] bg-red-900 px-2 py-1 rounded">LIMPAR</button>
+                            <button id="enhancerBtn" onclick="toggleEnhancer()" class="text-[9px] border border-gray-700 px-2 py-1 rounded font-bold transition uppercase">✨ Enhancer</button>
+                            <button onclick="saveToFavorites()" class="text-[9px] bg-green-800 hover:bg-green-700 px-2 py-1 rounded transition uppercase">⭐ Salvar</button>
+                            <button onclick="clearAll()" class="text-[9px] bg-red-950 px-2 py-1 rounded transition uppercase">Limpar</button>
                         </div>
                     </div>
-                    <textarea id="output" class="w-full bg-black/40 text-xs h-24 p-2 border border-gray-800 rounded mb-2 font-mono" readonly></textarea>
-                    <button onclick="copy('output')" class="w-full bg-indigo-600 hover:bg-indigo-500 text-[10px] font-bold py-2 rounded uppercase">Copiar Positivo</button>
+                    <textarea id="output" class="w-full bg-black/60 text-xs h-24 p-2 border border-gray-800 rounded mb-2 font-mono" readonly></textarea>
+                    <button onclick="copy('output')" class="w-full bg-indigo-600 hover:bg-indigo-500 text-[10px] font-black py-2.5 rounded uppercase tracking-widest">Copiar Prompt Positivo</button>
                 </div>
 
-                <div class="bg-gray-900 p-4 rounded-xl border border-red-900/30">
-                    <span class="text-[10px] font-bold text-red-500 block mb-1 uppercase tracking-tighter">Negative Prompt (Auto-ajustado)</span>
-                    <textarea id="negativeOutput" class="w-full bg-black/40 text-xs h-24 p-2 border border-gray-800 rounded mb-2 text-gray-500 font-mono" readonly></textarea>
-                    <button onclick="copy('negativeOutput')" class="w-full bg-red-900/50 hover:bg-red-800 text-[10px] font-bold py-2 rounded uppercase">Copiar Negativo</button>
+                <div class="bg-gray-950 p-4 rounded-xl border border-red-900/20">
+                    <span class="text-[10px] font-bold text-red-600 block mb-1 uppercase tracking-widest">Negative Prompt</span>
+                    <textarea id="negativeOutput" class="w-full bg-black/60 text-xs h-24 p-2 border border-gray-800 rounded mb-2 text-gray-600 font-mono" readonly></textarea>
+                    <button onclick="copy('negativeOutput')" class="w-full bg-red-900/40 hover:bg-red-900/60 text-[10px] font-bold py-2.5 rounded uppercase">Copiar Negativo</button>
                 </div>
             </div>
             
-            <div class="mt-4 bg-gray-900 p-3 rounded-xl border border-yellow-600/20 shadow-inner">
-                <span class="text-[10px] font-bold text-yellow-500 block mb-2 uppercase">☁️ Favoritos no Google Cloud</span>
-                <div id="favoritesList" class="flex flex-wrap gap-2 max-h-24 overflow-y-auto"></div>
+            <div class="mt-4 bg-black/40 p-3 rounded-xl border border-white/5">
+                <span class="text-[9px] font-bold text-gray-500 block mb-2 uppercase">☁️ Sincronizado com Google Cloud</span>
+                <div id="favoritesList" class="flex flex-wrap gap-2 max-h-20 overflow-y-auto"></div>
             </div>
         </div>
 
-        <div id="builder" class="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        <div id="builder" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
     </div>
 
     <script type="module">
-        // --- FIREBASE CONFIG ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -72,53 +69,55 @@
         const db = getFirestore(app);
         const favsCollection = collection(db, "prompts");
 
-        // --- DADOS DO GERADOR ---
         const categories = {
-            "👤 Tipo Físico": ["1man", "muscular hunk", "twink", "bear", "hairy daddy", "athletic build", "ottermale", "buff bodybuilder", "hairy chest", "smooth skin", "thick thighs", "bearded", "silver fox", "massive biceps", "defined v-line", "heavy glutes", "veiny arms"],
+            "👤 Rosto & Expressão": ["sexy smile", "smirking", "intense gaze", "orgasm face", "looking back", "biting lip", "sweaty face", "heavy breathing", "drool", "closed eyes", "blushing", "flushed face"],
             
-            "🍆 Sexo & Posições": ["2men", "gay couple", "passionate intercourse", "missionary position", "doggy style", "cowboy position", "reverse cowboy", "oral sex", "rimming", "anal focus", "deep kiss", "spanking", "spooning", "all fours", "handjob", "frottage", "double penetration"],
+            "💪 Corpo & Detalhes": ["1man", "2men", "muscular hunk", "bear", "twink", "defined v-line", "massive biceps", "hairy chest", "veiny arms", "defined abs", "heavy glutes", "thick thighs", "pre-cum", "erection focus"],
             
-            "⛓️ Fetiche & Materiais": ["jockstrap", "leather harness", "latex gear", "shiny pvc", "rubber suit", "bondage gear", "bulge focus", "visible erection", "shirtless", "nude", "half-undressed", "leather mask", "cockring", "ball gag", "sweaty skin", "dripping sweat", "oiled body"],
+            "🍆 Posições": ["passionate intercourse", "missionary", "doggy style", "cowboy position", "reverse cowboy", "oral sex", "rimming", "anal focus", "handjob", "frottage", "spooning", "all fours", "spanking"],
             
-            "👔 Roupas & Uniformes": ["suit and tie", "unbuttoned shirt", "grey sweatpants", "soccer kit", "police uniform", "military gear", "white briefs", "satin boxers", "towel", "crop top", "thong", "combat boots", "sneakers and socks", "silk robe", "tracksuit"],
+            "👔 Roupa & Material": ["jockstrap", "leather harness", "latex", "shiny pvc", "rubber", "grey sweatpants", "white briefs", "suit and tie", "unbuttoned shirt", "soccer kit", "towel", "thong", "silk", "nude"],
             
-            "📍 Ambientes": ["dark alley", "steamy shower", "luxury penthouse", "gym locker room", "leather bar", "neon street", "warehouse", "bedroom", "sauna", "dungeon", "public park night", "prison cell", "garage", "backstage", "hotel room"],
+            "📸 Câmera & Ângulo": ["full body shot", "close-up", "extreme close-up", "from below", "from above", "side view", "back view", "wide angle", "fisheye lens", "bokeh background"],
             
-            "🎨 Estilo Artístico": ["digital illustration", "cel shaded", "flat color", "thick lines", "anime style", "high contrast", "comic book art", "concept art", "oil painting", "detailed shadows", "vibrant colors", "masterpiece style"]
+            "💡 Iluminação": ["volumetric lighting", "rim lighting", "cinematic lighting", "neon lights", "soft lighting", "dramatic shadows", "backlit", "dimly lit", "golden hour", "studio lighting"],
+            
+            "📍 Ambiente": ["dark alley", "steamy shower", "gym locker room", "leather bar", "luxury penthouse", "neon street", "sauna", "dungeon", "prison cell", "garage", "hotel room", "beach at night"],
+            
+            "🎨 Estilo": ["digital illustration", "cel shaded", "flat color", "thick lines", "anime style", "high contrast", "comic book art", "concept art", "oil painting", "detailed shadows"]
         };
 
         let selectedTags = {}; 
         let categoryWeights = {};
+        let enhancerEnabled = false;
 
-        // Injetar funções no escopo global para os botões HTML funcionarem com Type="module"
-        window.saveToFavorites = async function() {
+        window.toggleEnhancer = () => {
+            enhancerEnabled = !enhancerEnabled;
+            document.getElementById('enhancerBtn').classList.toggle('enhancer-active');
+            updatePrompt();
+        };
+
+        window.toggleTag = (tag) => {
+            selectedTags[tag] = !selectedTags[tag];
+            updatePrompt();
+            render();
+        };
+
+        window.toggleCategoryWeight = (cat) => {
+            categoryWeights[cat] = !categoryWeights[cat];
+            updatePrompt();
+            render();
+        };
+
+        window.saveToFavorites = async () => {
             const p = document.getElementById('output').value;
             if(!p) return;
-            try { await addDoc(favsCollection, { text: p, createdAt: new Date() }); } 
-            catch (e) { alert("Erro ao salvar! Verifique as regras do Firebase."); }
+            await addDoc(favsCollection, { text: p, createdAt: new Date() });
         };
 
         window.deleteFromGoogle = async (id) => { if(confirm("Excluir?")) await deleteDoc(doc(db, "prompts", id)); };
-
-        window.toggleTag = (tag) => { selectedTags[tag] = !selectedTags[tag]; updatePrompt(); render(); };
-
-        window.toggleCategoryWeight = (cat) => { categoryWeights[cat] = !categoryWeights[cat]; updatePrompt(); render(); };
-
-        window.clearAll = () => { selectedTags = {}; categoryWeights = {}; updatePrompt(); render(); };
-
-        window.copy = (id) => { const a = document.getElementById(id); a.select(); document.execCommand('copy'); alert("Copiado!"); };
-
-        window.randomize = () => {
-            selectedTags = {}; categoryWeights = {};
-            Object.entries(categories).forEach(([cat, opts]) => {
-                if(Math.random() > 0.4) {
-                    const r = opts[Math.floor(Math.random() * opts.length)];
-                    selectedTags[r] = true;
-                    if(Math.random() > 0.7) categoryWeights[cat] = true;
-                }
-            });
-            updatePrompt(); render();
-        };
+        window.clearAll = () => { selectedTags = {}; categoryWeights = {}; enhancerEnabled = false; updatePrompt(); render(); };
+        window.copy = (id) => { const a = document.getElementById(id); a.select(); document.execCommand('copy'); };
 
         function render() {
             const container = document.getElementById('builder');
@@ -127,18 +126,18 @@
                 const section = document.createElement('div');
                 section.className = "section-card";
                 section.innerHTML = `
-                    <div class="flex justify-between items-center mb-4 border-b border-gray-800 pb-2">
-                        <h3 class="text-[10px] font-bold text-indigo-400 uppercase">${cat}</h3>
-                        <button onclick="toggleCategoryWeight('${cat}')" class="text-[9px] ${categoryWeights[cat] ? 'bg-yellow-600 text-black' : 'bg-gray-800 text-gray-400'} px-2 py-0.5 rounded font-bold transition">PESO +</button>
+                    <div class="flex justify-between items-center mb-3 border-b border-gray-800 pb-2">
+                        <h3 class="text-[9px] font-black text-indigo-400 uppercase tracking-widest">${cat}</h3>
+                        <button onclick="toggleCategoryWeight('${cat}')" class="text-[8px] ${categoryWeights[cat] ? 'bg-yellow-600 text-black' : 'bg-gray-800 text-gray-500'} px-2 py-0.5 rounded font-bold">PESO+</button>
                     </div>
                 `;
                 const grid = document.createElement('div');
-                grid.className = "grid grid-cols-2 gap-2";
+                grid.className = "grid grid-cols-2 gap-1.5";
                 options.forEach(opt => {
                     const btn = document.createElement('button');
                     btn.innerText = opt;
                     const isSelected = selectedTags[opt];
-                    btn.className = `btn-opt p-2 rounded-md text-left ${isSelected ? 'active' : ''} ${isSelected && categoryWeights[cat] ? 'weighted' : ''}`;
+                    btn.className = `btn-opt p-2 rounded text-left ${isSelected ? 'active' : ''} ${isSelected && categoryWeights[cat] ? 'weighted' : ''}`;
                     btn.onclick = () => toggleTag(opt);
                     grid.appendChild(btn);
                 });
@@ -151,8 +150,10 @@
             const model = document.getElementById('modelSelect').value;
             let tags = [];
             
-            // Auto-correção de quantidade
-            if(selectedTags["2men"] || selectedTags["gay couple"]) delete selectedTags["1man"];
+            // Lógica inteligente de quantidade
+            if(selectedTags["2men"] || selectedTags["passionate intercourse"]) {
+                delete selectedTags["1man"];
+            }
 
             for(const [cat, opts] of Object.entries(categories)) {
                 opts.forEach(opt => {
@@ -160,34 +161,30 @@
                 });
             }
 
+            const enhancerTags = enhancerEnabled ? ", (extremely detailed skin texture:1.2), (physically-based rendering:1.1), highly defined musculature, subsurface scattering, realistic lighting, detailed fabric texture" : "";
+
             let pos = ""; let neg = "";
 
             if (model === "pony") {
-                pos = `score_9, score_8, score_7, rating_explicit, source_anime, ${tags.join(", ")}`;
-                neg = "score_4, score_5, score_6, low quality, bad anatomy, text, signature, 3d, realistic, female, woman, girl, blurred, missing limbs, extra fingers, distorted genitals, flat chest, huge eyes";
+                pos = `score_9, score_8, score_7, rating_explicit, source_anime, ${tags.join(", ")}${enhancerTags}`;
+                neg = "score_4, score_5, score_6, low quality, bad anatomy, text, signature, 3d, realistic, female, woman, girl, blurred, missing limbs, flat chest, huge eyes, distorted genitals";
             } else {
-                pos = `masterpiece, high quality, ${tags.join(", ")}, illustration, male focus`;
-                neg = "female, woman, girl, lowres, bad anatomy, error, extra limbs, photo, realistic, blurred, crop, ugly";
+                pos = `masterpiece, high quality, ${tags.join(", ")}${enhancerTags}, illustration, male focus`;
+                neg = "female, woman, girl, lowres, bad anatomy, error, extra limbs, photo, realistic, blurred, ugly, text";
             }
 
             document.getElementById('output').value = pos;
             document.getElementById('negativeOutput').value = neg;
         }
 
-        // Snapshot Favoritos
-        const q = query(favsCollection, orderBy("createdAt", "desc"));
-        onSnapshot(q, (snapshot) => {
+        onSnapshot(query(favsCollection, orderBy("createdAt", "desc")), (snap) => {
             const list = document.getElementById('favoritesList');
             list.innerHTML = "";
-            snapshot.forEach((doc) => {
+            snap.forEach((doc) => {
                 const data = doc.data();
-                const id = doc.id;
                 const item = document.createElement('div');
-                item.className = "flex items-center bg-gray-800/50 border border-gray-700 rounded px-2 py-1 max-w-[200px]";
-                item.innerHTML = `
-                    <button onclick="navigator.clipboard.writeText('${data.text.replace(/'/g, "\\'")}'); alert('Copiado!')" class="text-[9px] truncate text-gray-300 hover:text-white mr-2">${data.text}</button>
-                    <button onclick="deleteFromGoogle('${id}')" class="text-red-500 hover:text-red-400 font-bold">×</button>
-                `;
+                item.className = "flex items-center bg-gray-900 border border-gray-800 rounded px-2 py-1";
+                item.innerHTML = `<button onclick="navigator.clipboard.writeText('${data.text.replace(/'/g, "\\'")}'); alert('Copiado!')" class="text-[8px] text-gray-400 mr-2 max-w-[150px] truncate">${data.text}</button><button onclick="deleteFromGoogle('${doc.id}')" class="text-red-500 font-bold">×</button>`;
                 list.appendChild(item);
             });
         });
