@@ -3,73 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Master Prompt Builder - Illustration XL</title>
+    <title>AI Art Prompt Studio</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .active { background-color: #4f46e5 !important; color: white; ring: 2px solid #818cf8; }
-        .category-title { border-left: 4px solid #4f46e5; padding-left: 10px; margin-top: 25px; font-weight: bold; color: #a5b4fc; }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 10px; }
+        .active { background-color: #4f46e5 !important; color: white; border-color: #818cf8; }
+        .weighted { border: 2px solid #fbbf24 !important; font-weight: bold; }
+        .category-title { display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #374151; padding-bottom: 8px; margin-top: 25px; font-weight: bold; color: #a5b4fc; }
+        .prompt-box { background: rgba(0,0,0,0.4); border: 1px solid #4f46e5; }
     </style>
 </head>
-<body class="bg-gray-950 text-gray-100 p-4 md:p-8">
+<body class="bg-gray-950 text-gray-100 p-4 md:p-8 font-sans">
 
-    <div class="max-w-5xl mx-auto">
-        <h1 class="text-4xl font-extrabold mb-2 text-center text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
-            Male Illustration Prompt Builder
-        </h1>
-        <p class="text-center text-gray-400 mb-8 text-sm uppercase tracking-widest">Otimizado para Illustration XL</p>
+    <div class="max-w-6xl mx-auto">
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-pink-500">AI ART STUDIO</h1>
+            <p class="text-gray-500 text-xs mt-2">Dica: Clique normal para selecionar | Clique longo (ou Segurar) para dar PESO (1.3)</p>
+        </header>
         
-        <div class="sticky top-4 bg-gray-900/95 backdrop-blur-md p-5 rounded-2xl shadow-2xl border border-indigo-500/30 mb-10 z-50">
-            <div class="flex justify-between items-end mb-2">
-                <label class="text-xs font-bold text-indigo-400 uppercase">Prompt Gerado</label>
-                <div class="space-x-2">
-                    <button onclick="randomize()" class="bg-purple-600 hover:bg-purple-500 text-white text-xs px-3 py-1 rounded-md font-bold transition">🎲 RANDOM</button>
-                    <button onclick="clearAll()" class="bg-red-900/50 hover:bg-red-800 text-white text-xs px-3 py-1 rounded-md font-bold transition">LIMPAR</button>
+        <div class="sticky top-4 z-50 space-y-4 mb-10">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="prompt-box p-4 rounded-xl shadow-2xl backdrop-blur-lg">
+                    <div class="flex justify-between items-center mb-2">
+                        <select id="modelSelect" onchange="updatePrompt()" class="bg-gray-800 text-xs p-1 rounded border border-gray-600 outline-none">
+                            <option value="xl">Illustration XL / SDXL</option>
+                            <option value="pony">Pony Diffusion V6</option>
+                            <option value="sd15">Stable Diffusion 1.5</option>
+                        </select>
+                        <div class="flex gap-2">
+                            <button onclick="randomize()" class="text-[10px] bg-purple-600 px-2 py-1 rounded">🎲 RANDOM</button>
+                            <button onclick="clearAll()" class="text-[10px] bg-red-900 px-2 py-1 rounded">LIMPAR</button>
+                        </div>
+                    </div>
+                    <textarea id="output" class="w-full bg-transparent text-sm h-24 outline-none resize-none" placeholder="O prompt aparecerá aqui..."></textarea>
+                    <button onclick="copy('output')" class="w-full mt-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-2 rounded-lg transition">COPIAR POSITIVO</button>
+                </div>
+
+                <div class="prompt-box p-4 rounded-xl shadow-2xl backdrop-blur-lg border-red-900/50">
+                    <label class="text-[10px] font-bold text-red-400 uppercase block mb-2">Prompt Negativo (Auto-ajustado)</label>
+                    <textarea id="negativeOutput" class="w-full bg-transparent text-sm h-24 outline-none resize-none text-gray-400" readonly></textarea>
+                    <button onclick="copy('negativeOutput')" class="w-full mt-2 bg-red-900 hover:bg-red-800 text-white text-xs font-bold py-2 rounded-lg transition">COPIAR NEGATIVO</button>
                 </div>
             </div>
-            <textarea id="output" class="w-full bg-black/50 border border-gray-700 rounded-lg p-3 text-sm text-gray-200 h-28 mb-4 focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Selecione as opções abaixo..."></textarea>
-            <button onclick="copyPrompt()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg active:scale-95">Copiar para o Gerador de IA</button>
         </div>
 
-        <div id="builder" class="grid grid-cols-1 md:grid-cols-2 gap-x-8">
+        <div id="builder" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             </div>
     </div>
 
     <script>
         const categories = {
-            "Tipo Físico": ["muscular hunk", "twink", "bear (hairy and husky)", "daddy", "athletic build", "buff bodybuilder", "slim and toned", "hairy chest", "defined abs", "thick thighs", "bearded man"],
-            
-            "Posições Sexuais / Gay Art": ["gay couple", "intercourse", "missionary position", "doggy style", "cowboy position", "oral sex", "rimming", "holding waist", "man on top", "embracing from behind", "deep kiss", "all fours"],
-            
-            "Roupas Sexuais / Fetiche": ["jockstrap", "leather harness", "latex gear", "spandex shorts", "rubber suit", "bondage gear", "shirtless", "nude", "half-undressed", "crotchless briefs", "lingerie for men", "satin boxers"],
-            
-            "Roupas e Uniformes": ["suit and tie", "unbuttoned dress shirt", "hoodie and jeans", "soccer kit", "police uniform", "military gear", "mechanic jumpsuit", "gym tank top", "towel around waist"],
-            
-            "Ambientes": ["dark alleyway", "steamy shower", "luxury penthouse", "gym locker room", "outdoor forest", "leather bar", "neon cyberpunk street", "industrial warehouse", "messy bedroom", "underground club", "beach at night"],
-            
-            "Posições Solo": ["standing", "sitting on chair", "lying on bed", "kneeling", "leaning against wall", "squatting", "back view", "showing bulge", "hand on crotch"],
-            
-            "Estilo Visual": ["digital illustration", "flat color", "cel shaded", "thick lines", "anime style", "high contrast", "oil painting style", "vintage comic book"]
+            "👤 Tipo Físico": ["muscular hunk", "twink", "bear", "daddy", "athletic", "slim", "hairy chest", "defined abs", "thick thighs"],
+            "🔥 Posições Sexuais": ["gay couple", "intercourse", "missionary", "doggy style", "cowboy position", "oral sex", "rimming", "anal focus", "holding waist", "man on top"],
+            "⛓️ Fetiche/Roupas": ["jockstrap", "leather harness", "latex gear", "spandex", "shirtless", "nude", "half-undressed", "crotchless briefs", "bondage gear"],
+            "👔 Casual/Uniformes": ["suit and tie", "unbuttoned shirt", "hoodie", "soccer kit", "police uniform", "military gear", "gym tank top", "towel"],
+            "🏢 Ambientes": ["dark alley", "steamy shower", "luxury penthouse", "gym locker", "leather bar", "neon street", "industrial warehouse", "bedroom"],
+            "🎨 Estilo": ["digital illustration", "cel shaded", "flat color", "thick lines", "anime style", "oil painting", "comic book"]
         };
 
-        let selections = {};
+        let selections = {}; // Armazena { "opção": peso }
 
         function renderButtons() {
             const container = document.getElementById('builder');
             for (const [category, options] of Object.entries(categories)) {
                 const div = document.createElement('div');
-                div.className = "mb-4";
-                div.innerHTML = `<h3 class="category-title text-lg mb-3">${category}</h3>`;
+                div.innerHTML = `<h3 class="category-title">${category}</h3>`;
                 const btnContainer = document.createElement('div');
-                btnContainer.className = "flex flex-wrap gap-2";
+                btnContainer.className = "flex flex-wrap gap-2 mt-3";
                 
                 options.forEach(opt => {
                     const btn = document.createElement('button');
                     btn.innerText = opt;
                     btn.id = `btn-${opt}`;
-                    btn.className = "bg-gray-800 hover:bg-gray-700 border border-gray-700 px-3 py-1.5 rounded-lg text-xs transition-all";
-                    btn.onclick = () => toggleOption(category, opt);
+                    btn.className = "bg-gray-900 border border-gray-800 px-3 py-1.5 rounded-lg text-xs transition-all hover:border-indigo-500";
+                    
+                    // Lógica de clique e clique longo
+                    let timer;
+                    btn.onmousedown = () => timer = setTimeout(() => toggleOption(opt, true), 500);
+                    btn.onmouseup = () => { clearTimeout(timer); if(!selections[opt]) toggleOption(opt, false); };
+                    btn.onclick = () => { if(selections[opt]) toggleOption(opt, false); };
+                    
                     btnContainer.appendChild(btn);
                 });
                 div.appendChild(btnContainer);
@@ -77,64 +89,70 @@
             }
         }
 
-        function toggleOption(cat, opt) {
-            if (!selections[cat]) selections[cat] = new Set();
-            
+        function toggleOption(opt, isWeighted) {
             const btn = document.getElementById(`btn-${opt}`);
-            if (selections[cat].has(opt)) {
-                selections[cat].delete(opt);
-                if(btn) btn.classList.remove('active');
+            if (selections[opt]) {
+                delete selections[opt];
+                btn.classList.remove('active', 'weighted');
             } else {
-                selections[cat].add(opt);
-                if(btn) btn.classList.add('active');
+                selections[opt] = isWeighted ? 1.3 : 1.0;
+                btn.classList.add('active');
+                if(isWeighted) btn.classList.add('weighted');
             }
             updatePrompt();
         }
 
         function updatePrompt() {
-            let finalPrompt = [];
-            const order = ["Tipo Físico", "Posições Sexuais / Gay Art", "Posições Solo", "Roupas Sexuais / Fetiche", "Roupas e Uniformes", "Ambientes", "Estilo Visual"];
-            
-            order.forEach(cat => {
-                if (selections[cat] && selections[cat].size > 0) {
-                    finalPrompt.push(Array.from(selections[cat]).join(", "));
-                }
+            const model = document.getElementById('modelSelect').value;
+            let tags = Object.entries(selections).map(([tag, weight]) => {
+                return weight > 1 ? `(${tag}:${weight})` : tag;
             });
 
-            const prefix = "A high-quality digital illustration of";
-            const suffix = "masterpiece, sharp focus, 8k, detailed anatomy, highly detailed";
-            
-            document.getElementById('output').value = finalPrompt.length > 0 
-                ? `${prefix} ${finalPrompt.join(", ")}, ${suffix}` 
-                : "";
+            let pos = "";
+            let neg = "";
+
+            if (model === "pony") {
+                pos = "score_9, score_8, score_7, rating_explicit, source_anime, " + tags.join(", ");
+                neg = "score_4, score_5, score_6, low quality, bad anatomy, text, signature, 3d, realistic";
+            } else if (model === "xl") {
+                pos = "masterpiece, high quality, " + tags.join(", ") + ", highly detailed illustration";
+                neg = "lowres, bad anatomy, hands, text, error, missing fingers, cropped, worst quality, low quality, blurred";
+            } else {
+                pos = tags.join(", ") + ", highly detailed, 8k wallpaper";
+                neg = "disfigured, ugly, bad proportions, distorted, extra limbs";
+            }
+
+            document.getElementById('output').value = pos;
+            document.getElementById('negativeOutput').value = neg;
         }
 
         function randomize() {
             clearAll();
-            for (const [category, options] of Object.entries(categories)) {
-                // Sorteia se essa categoria vai entrar no random (80% de chance)
-                if (Math.random() > 0.2) {
-                    const randomOption = options[Math.floor(Math.random() * options.length)];
-                    toggleOption(category, randomOption);
+            Object.values(categories).forEach(opts => {
+                if (Math.random() > 0.3) {
+                    const randomOpt = opts[Math.floor(Math.random() * opts.length)];
+                    toggleOption(randomOpt, Math.random() > 0.8);
                 }
-            }
+            });
         }
 
         function clearAll() {
             selections = {};
-            document.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('button').forEach(b => b.classList.remove('active', 'weighted'));
             updatePrompt();
         }
 
-        function copyPrompt() {
-            const copyText = document.getElementById("output");
-            if (!copyText.value) return alert("Selecione algo primeiro!");
-            copyText.select();
+        function copy(id) {
+            const text = document.getElementById(id);
+            text.select();
             document.execCommand("copy");
-            alert("Prompt copiado com sucesso!");
+            const originalBtn = event.target.innerText;
+            event.target.innerText = "COPIADO!";
+            setTimeout(() => event.target.innerText = originalBtn, 1000);
         }
 
         renderButtons();
+        updatePrompt();
     </script>
 </body>
 </html>
