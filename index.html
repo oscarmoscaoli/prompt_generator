@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompt Builder - Illustration XL</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .active { background-color: #4f46e5 !important; color: white; }
+        .category-title { border-left: 4px solid #4f46e5; padding-left: 10px; margin-top: 20px; font-weight: bold; }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 p-8">
+
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6 text-center text-indigo-400">Male Illustration Prompt Builder</h1>
+        
+        <div class="sticky top-4 bg-gray-800 p-4 rounded-xl shadow-2xl border border-indigo-500 mb-8 z-50">
+            <label class="block text-sm font-medium mb-2 text-indigo-300">Prompt Gerado:</label>
+            <textarea id="output" class="w-full bg-gray-900 border border-gray-700 rounded p-3 text-white h-24 mb-3" readonly></textarea>
+            <button onclick="copyPrompt()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded transition">Copiar Prompt</button>
+        </div>
+
+        <div id="builder">
+            </div>
+    </div>
+
+    <script>
+        const categories = {
+            "Estilo de Ilustração": ["illustration style", "cel shaded", "flat color", "thick lines", "digital painting", "high contrast"],
+            "Posições (Solo)": ["standing", "sitting", "lying down", "kneeling", "leaning against wall", "squatting", "back view"],
+            "Posições Sexuais / Intimidade": ["gay couple", "passionate kiss", "missionary position", "doggy style", "guy on top", "holding waist", "embracing from behind", "all fours"],
+            "Roupas Casuais/Formais": ["t-shirt", "hoodie", "jeans", "business suit", "tank top", "unbuttoned shirt", "briefs", "boxers"],
+            "Roupas Fetiche/Sexuais": ["jockstrap", "leather harness", "latex gear", "spandex", "bulge focus", "shirtless", "nude", "half-undressed"],
+            "Cenário": ["bedroom", "dark alley", "gym", "bathroom", "outdoor park", "studio background", "neon lights"]
+        };
+
+        const selections = {};
+
+        function renderButtons() {
+            const container = document.getElementById('builder');
+            for (const [category, options] of Object.entries(categories)) {
+                const div = document.createElement('div');
+                div.innerHTML = `<h3 class="category-title text-xl mb-3 text-indigo-300">${category}</h3>`;
+                const btnContainer = document.createElement('div');
+                btnContainer.className = "flex flex-wrap gap-2 mb-6";
+                
+                options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.innerText = opt;
+                    btn.className = "bg-gray-800 hover:bg-gray-700 border border-gray-600 px-3 py-1 rounded-full text-sm transition";
+                    btn.onclick = () => toggleOption(category, opt, btn);
+                    btnContainer.appendChild(btn);
+                });
+                div.appendChild(btnContainer);
+                container.appendChild(div);
+            }
+        }
+
+        function toggleOption(cat, opt, el) {
+            if (!selections[cat]) selections[cat] = new Set();
+            
+            if (selections[cat].has(opt)) {
+                selections[cat].delete(opt);
+                el.classList.remove('active');
+            } else {
+                selections[cat].add(opt);
+                el.classList.add('active');
+            }
+            updatePrompt();
+        }
+
+        function updatePrompt() {
+            let finalPrompt = [];
+            for (const cat in selections) {
+                if (selections[cat].size > 0) {
+                    finalPrompt.push(Array.from(selections[cat]).join(", "));
+                }
+            }
+            // Adiciona qualidade padrão para Illustration XL
+            const suffix = "masterpiece, high quality, sharp focus, 8k";
+            document.getElementById('output').value = finalPrompt.join(", ") + (finalPrompt.length > 0 ? ", " + suffix : "");
+        }
+
+        function copyPrompt() {
+            const copyText = document.getElementById("output");
+            copyText.select();
+            document.execCommand("copy");
+            alert("Prompt copiado!");
+        }
+
+        renderButtons();
+    </script>
+</body>
+</html>
