@@ -197,4 +197,32 @@
                 const rand = opts[Math.floor(Math.random() * opts.length)];
                 selectedTags[rand] = true;
             });
-            const pos
+            const posCats = ["Posições (Duo Req)", "Posições (Solo/Random Duo)"];
+            const cat = posCats[Math.floor(Math.random() * posCats.length)];
+            const opts = categories[cat];
+            selectedTags[opts[Math.floor(Math.random() * opts.length)]] = true;
+            
+            if(document.getElementById('modelSelect').value === "homosimile") {
+                const select = document.getElementById('artistSelect');
+                select.selectedIndex = Math.floor(Math.random() * (select.options.length - 1)) + 1;
+            }
+
+            updatePrompt();
+            render();
+        }
+
+        function clearAll() { 
+            selectedTags = {}; 
+            document.getElementById('artistSelect').selectedIndex = 0;
+            updatePrompt(); 
+            render(); 
+        }
+        function toggleTheme() { document.body.classList.toggle('light-theme'); }
+        function copy(id) { const a = document.getElementById(id); a.select(); document.execCommand('copy'); }
+
+        initArtists();
+        render();
+        updatePrompt();
+    </script>
+</body>
+</html>
